@@ -76,10 +76,30 @@ class TaskSystemParallelThreadPoolSpinning: public ITaskSystem {
  */
 class TaskSystemParallelThreadPoolSleeping: public ITaskSystem {
     public:
+        std::vector<std::thread> thread_pool_;
+        std::condition_variable start_work;
+        std::condition_variable work_complete;
+
+        IRunnable *runnable_;
+
+        std::mutex work;
+        std::mutex stop_work;
+        std::mutex task_assignment_mutex_;
+        std::mutex task_completion_mutex_;
+
+        int num_threads_;
+        int enter_loop_;
+        int num_total_tasks_;
+        int tasks_completed_;
+        int task_id_;
+        bool stop_spinning=false;
+        bool tasks_done_=false;
+
         TaskSystemParallelThreadPoolSleeping(int num_threads);
         ~TaskSystemParallelThreadPoolSleeping();
         const char* name();
         void run(IRunnable* runnable, int num_total_tasks);
+        void runThreadEventLoop();
         TaskID runAsyncWithDeps(IRunnable* runnable, int num_total_tasks,
                                 const std::vector<TaskID>& deps);
         void sync();
